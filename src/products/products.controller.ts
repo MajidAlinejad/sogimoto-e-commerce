@@ -1,4 +1,3 @@
-// src/products/products.controller.ts
 import {
   Controller,
   Get,
@@ -8,10 +7,12 @@ import {
   NotFoundException,
   UsePipes,
   ValidationPipe,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { ReviewsService } from '../reviews/reviews.service';
-import { ProductDto as Product } from '../products/dto/product.dto';
+import { ProductDto as Product, ProductDto } from '../products/dto/product.dto';
 import { ReviewDto as Review } from '../reviews/dto/review.dto';
 import { CreateReviewDto } from 'src/reviews/dto/create-review.dto/create-review.dto';
 import {
@@ -21,6 +22,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { CreateProductDto } from './dto/create-product.dto/create-product.dto';
 
 @Controller('products')
 @ApiTags('products')
@@ -30,11 +32,31 @@ export class ProductsController {
     private readonly reviewsService: ReviewsService,
   ) {}
 
-  // GET /products/:id
-  @ApiOperation({ summary: 'Get a product by ID' }) // Description for the operation
-  @ApiParam({ name: 'id', description: 'ID of the product', type: Number }) // Document the path parameter
-  @ApiResponse({ status: 200, description: 'Product found', type: Product }) // Describe success response
-  @ApiResponse({ status: 404, description: 'Product not found' }) // Describe error response
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a new product' })
+  @ApiBody({ type: CreateProductDto, description: 'Product data to create' })
+  @ApiResponse({
+    status: 201,
+    description: 'Product created successfully',
+    type: ProductDto,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input' })
+  @ApiResponse({
+    status: 409,
+    description: 'Product with this name already exists',
+  })
+  async createProduct(
+    @Body() createProductDto: CreateProductDto,
+  ): Promise<ProductDto> {
+    const product = await this.productsService.createProduct(createProductDto);
+    return product;
+  }
+
+  @ApiOperation({ summary: 'Get a product by ID' })
+  @ApiParam({ name: 'id', description: 'ID of the product', type: Number })
+  @ApiResponse({ status: 200, description: 'Product found', type: Product })
+  @ApiResponse({ status: 404, description: 'Product not found' })
   @Get(':id')
   async getProduct(@Param('id') id: string): Promise<Product> {
     const productId = parseInt(id, 10);
@@ -48,10 +70,9 @@ export class ProductsController {
     return product;
   }
 
-  // GET /products/:id/reviews
   @ApiOperation({ summary: 'Get all reviews for a specific product' })
   @ApiParam({ name: 'id', description: 'ID of the product', type: Number })
-  @ApiResponse({ status: 200, description: 'Reviews found', type: [Review] }) // type: [Review] for array
+  @ApiResponse({ status: 200, description: 'Reviews found', type: [Review] })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @Get(':id/reviews')
   async getProductReviews(@Param('id') id: string): Promise<Review[]> {
@@ -59,7 +80,7 @@ export class ProductsController {
     if (isNaN(productId)) {
       throw new NotFoundException('Invalid product ID format.');
     }
-    // Optional: Check if product exists before fetching reviews
+
     const productExists = await this.productsService.findOne(productId);
     if (!productExists) {
       throw new NotFoundException(`Product with ID ${id} not found.`);
@@ -67,10 +88,9 @@ export class ProductsController {
     return this.reviewsService.findAllByProductId(productId);
   }
 
-  // POST /products/:id/reviews
   @ApiOperation({ summary: 'Create a new review for a product' })
   @ApiParam({ name: 'id', description: 'ID of the product', type: Number })
-  @ApiBody({ type: CreateReviewDto, description: 'Review data' }) // Document the request body DTO
+  @ApiBody({ type: CreateReviewDto, description: 'Review data' })
   @ApiResponse({
     status: 201,
     description: 'Review created successfully',
@@ -79,7 +99,7 @@ export class ProductsController {
   @ApiResponse({ status: 400, description: 'Invalid input' })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @Post(':id/reviews')
-  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) // Apply validation pipe
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   async createProductReview(
     @Param('id') id: string,
     @Body() createReviewDto: CreateReviewDto,
