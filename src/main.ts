@@ -9,7 +9,12 @@ async function bootstrap() {
 
   // --- GLOBAL PIPES AND OTHER CONFIGURATIONS GO HERE (BEFORE listen) ---
   // Enable CORS (Cross-Origin Resource Sharing) if your frontend is on a different domain
-  app.enableCors();
+  // Enable CORS
+  app.enableCors({
+    origin: 'http://localhost:3003', // Allow requests from your Next.js frontend
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // If you're sending cookies or authorization headers
+  });
 
   // Apply global validation pipe for DTOs
   app.useGlobalPipes(

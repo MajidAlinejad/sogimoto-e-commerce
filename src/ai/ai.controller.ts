@@ -5,7 +5,7 @@ import { AiService } from './ai.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('ai')
-@Controller('Ai')
+@Controller('ai')
 export class AiController {
   constructor(private readonly aiService: AiService) {}
 
@@ -40,6 +40,7 @@ export class AiController {
     description: 'Failed to generate summary (AI service error)',
   })
   async summarize(@Param('id') id: number, @Res() res: Response) {
+    console.log('--- HIT /Ai/summery endpoint ---');
     try {
       const summary = await this.aiService.summarizeProductInfoAndReviews({
         productId: id,
