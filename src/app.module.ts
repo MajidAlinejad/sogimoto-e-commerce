@@ -9,6 +9,7 @@ import { AiModule } from './ai/ai.module';
 import { PrismaService } from './prisma/prisma.service'; // Ensure this is provided
 import { ConfigModule } from '@nestjs/config'; // For environment variables
 import { UsersModule } from './users/users.module'; // Import UsersModule
+import { UsersController } from './users/users.controller';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { UsersModule } from './users/users.module'; // Import UsersModule
     AiModule,
     UsersModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, UsersController],
   providers: [AppService, PrismaService],
 })
 export class AppModule {}
