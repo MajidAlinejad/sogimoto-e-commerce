@@ -1,26 +1,41 @@
+// src/products/products.service.ts
 import { Injectable } from '@nestjs/common';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { Product } from '@prisma/client';
 
 @Injectable()
 export class ProductsService {
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+  constructor(private prisma: PrismaService) {}
+
+  async findOne(id: number): Promise<Product | null> {
+    return this.prisma.product.findUnique({
+      where: { id },
+    });
   }
 
-  findAll() {
-    return `This action returns all products`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
-  }
-
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async seedProducts(): Promise<void> {
+    const products = await this.prisma.product.findMany();
+    if (products.length === 0) {
+      await this.prisma.product.createMany({
+        data: [
+          {
+            name: 'Laptop Pro X',
+            description: 'Powerful laptop for professionals.',
+            price: 1500.0,
+          },
+          {
+            name: 'Wireless Ergonomic Mouse',
+            description: 'Comfortable mouse for long use.',
+            price: 45.99,
+          },
+          {
+            name: '4K Monitor 27-inch',
+            description: 'Stunning visuals with vibrant colors.',
+            price: 399.0,
+          },
+        ],
+      });
+      console.log('Seeded initial products.');
+    }
   }
 }
