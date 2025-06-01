@@ -70,6 +70,14 @@ export class ProductsController {
     return product;
   }
 
+  @ApiResponse({ status: 200, description: 'Products List', type: [Product] })
+  @ApiResponse({ status: 404, description: 'Products not found' })
+  @Get()
+  async getAllProduct(): Promise<Product[]> {
+    const products = await this.productsService.findAll();
+    return products || [];
+  }
+
   @ApiOperation({ summary: 'Get all reviews for a specific product' })
   @ApiParam({ name: 'id', description: 'ID of the product', type: Number })
   @ApiResponse({ status: 200, description: 'Reviews found', type: [Review] })
